@@ -1,0 +1,34 @@
+- name: Be sure postgreSQL client packages (prerequire) are installed
+  apt:
+    name: '{{ postgresql_client_packages_prerequire }}'
+    state: present
+
+- name: Add postgreSQL GPG key
+  apt_key:
+    url: '{{ postgresql_repo_key_url }}'
+    state: present
+
+- name: Add postgreSQL debian repository
+  apt_repository:
+    repo: '{{ postgresql_repo_url }}'
+    update_cache: yes
+    state: present
+
+- name: Be sure postgreSQL client packages are installed
+  apt:
+    name: '{{ postgresql_client_packages }}'
+    state: present
+
+- name: Gather the package facts
+  package_facts:
+    manager: auto
+
+- name: Check if PHP package is required
+  set_fact:
+    php_installed: "{{ true if postgresql_client_check_php_package in ansible_facts.packages else false }}"
+
+- name: Install PHP package (if required)
+  apt:
+    name: '{{ postgresql_client_php_package }}'
+    state: present
+  when: php_installed
